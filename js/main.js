@@ -1,6 +1,5 @@
 // clear the screen for testing
-document.body.innerHTML = '';
-document.body.style.background="white";
+
 
 var nums = [1,2,3];
 
@@ -46,23 +45,45 @@ var octopus = {
           selectedCat.clickCount++;
         view.renderClicks(selectedCat.clickCount);
       }
+    },
+    getSelectedCat: function() {
+        return selectedCat;
+    },
+    updateCat: function(name, src, clickCount) {
+        selectedCat.name = name;
+        selectedCat.src = src;
+        selectedCat.clickCount = clickCount;
+        view.initList();
+        view.renderCat();
+        view.hideAdminDiv();
+    },
+    getAllCats: function() {
+        return cats;
     }
-
 
 };
 
 var view = {
     init: function(cats) {
+        this.catList = document.getElementById("cat-list");
+        this.catDiv = document.getElementById("catDiv");
+        this.catName = document.getElementById("cat-name");
+        this.catImage = document.getElementById("cat-image");
+        this.catClickCount = document.getElementById("cat-clickCount");
         this.initCatCanvas();
         this.initAdminViews();
-        let listDiv = document.createElement("div");
-        document.body.appendChild(listDiv);
+        this.initList();
+
+    },
+    initList: function() {
+        this.catList.innerHTML = '';
+        const cats = octopus.getAllCats();
         cats.forEach((cat) => {
-            let child = document.createElement("div");
+            let child = document.createElement("li");
             child.textContent = cat.name;
             child.addEventListener('click', octopus.renderCat(cat));
-            listDiv.appendChild(child);
-        })
+            this.catList.appendChild(child);
+        });
     },
     initAdminViews: function() {
         this.adminButton = document.getElementById("adminButton");
@@ -72,30 +93,45 @@ var view = {
         this.saveButton = document.getElementById("saveButton");
         this.cancelButton = document.getElementById("cancelButton");
         this.adminDiv = document.getElementById("adminDiv");
-        this.adminDiv.addEventListener('click', function () {
-            
+        this.adminButton.addEventListener('click', function () {
+            view.showAdminDiv();
+        });
+        this.cancelButton.addEventListener('click', function() {
+            view.hideAdminDiv();
+        });
+        this.saveButton.addEventListener('click', function() {
+            octopus.updateCat(view.nameTextBox.value, view.srcTextBox.value, view.clickCountTextBox.value);
         })
     },
+    showAdminDiv: function() {
+      this.adminDiv.style.display = 'block';
+    },
+    hideAdminDiv: function() {
+        this.adminDiv.style.display = 'none';
+    },
+    renderAdminDiv: function() {
+        const selectedCat = octopus.getSelectedCat();
+        this.nameTextBox.value = selectedCat.name;
+        this.srcTextBox.value = selectedCat.src;
+        this.clickCountTextBox.value = selectedCat.clickCount;
+    },
     initCatCanvas: function () {
-        let catDiv = document.createElement("div");
-        catDiv.style.position = 'absolute';
-        catDiv.style.left = '200px';
-        document.body.appendChild(catDiv);
-        this.catNameDiv = document.createElement("div");
-        this.catImage = document.createElement("img");
-        this.catClicksDiv = document.createElement("div");
-        catDiv.appendChild(this.catNameDiv);
-        catDiv.appendChild(this.catImage);
-        catDiv.appendChild(this.catClicksDiv);
+        this.catDiv.style.position = 'absolute';
+        this.catDiv.style.left = '400px';
+        this.catDiv.style.top = '0px';
         this.catImage.addEventListener('click', octopus.incrementClick());
     },
-    renderCat: function(cat) {
-        this.catNameDiv.textContent = cat.name;
-        this.catClicksDiv.textContent = cat.clickCount;
+    renderCat: function() {
+        const cat = octopus.getSelectedCat();
+        this.catName.textContent = cat.name;
+        this.catClickCount.textContent = cat.clickCount;
         this.catImage.setAttribute('src', cat.src);
+        this.renderAdminDiv();
     },
-    renderClicks: function(num) {
-        this.catClicksDiv.textContent = num;
+    renderClicks: function() {
+        const num  = octopus.getSelectedCat().clickCount;
+        this.catClickCount.textContent = num;
+        this.renderAdminDiv();
     }
 
 };
